@@ -31,11 +31,19 @@ async function run() {
     await client.connect();
 
     const apartCollection = client.db("manageDb").collection("apartment");
+    const cartCollection = client.db("manageDb").collection("carts");
 
     // apartment related api
     app.get('/apartment', async(req, res) =>{
         const result = await apartCollection.find().toArray();
         res.send(result)
+    })
+
+    // carts collection
+    app.post('/carts', async(req, res) => {
+        const cartItem = req.body;
+        const result = await cartCollection.insertOne(cartItem);
+        
     })
 
 

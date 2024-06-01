@@ -31,7 +31,8 @@ async function run() {
     await client.connect();
 
     const apartCollection = client.db("manageDb").collection("apartment");
-    const cartCollection = client.db("manageDb").collection("carts");
+    const apartmentCollection = client.db("manageDb").collection("aparts");
+    // const cartCollection = client.db("manageDb").collection("carts");
 
     // apartment related api
     app.get('/apartment', async(req, res) =>{
@@ -40,11 +41,26 @@ async function run() {
     })
 
     // carts collection
-    app.post('/carts', async(req, res) => {
-        const cartItem = req.body;
-        const result = await cartCollection.insertOne(cartItem);
-        res.send(result);
-    })
+    // app.post('/carts', async (req, res) => {
+    //   const cartItem = req.body;
+    //   const result = await cartCollection.insertOne(cartItem);
+    //   res.send(result);
+    // });
+
+    
+    app.get('/aparts', async(req, res) =>{
+      const email = req.query.email;
+      const query = {email: email};
+      const result = await apartmentCollection.find(query).toArray();
+      res.send(result)
+  })
+
+    app.post('/aparts', async (req, res) => {
+      const cartItem = req.body;
+      const result = await apartmentCollection.insertOne(cartItem);
+      res.send(result);
+    });
+
 
 
 

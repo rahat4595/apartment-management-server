@@ -25,11 +25,32 @@ async function run() {
     // Connect the client to the server (optional starting in v4.7)
     await client.connect();
 
+    const userCollection = client.db("manageDb").collection("users");
     const apartCollection = client.db("manageDb").collection("apartment");
     const apartmentCollection = client.db("manageDb").collection("aparts");
 
+
     // Create unique index on email to ensure one agreement per user
     await apartmentCollection.createIndex({ email: 1 }, { unique: true });
+
+
+
+    // users related api
+    app.post('/users', async(req, res) =>{
+      const user = req.body;
+       // insert email if user doesnt exists: 
+      const query = {email: user.email};
+      const existingUser = await userCollection.findOne(query)
+      if(existingUser){
+        return res.send({message: 'user alrady exists', insertedId: null})
+      }
+       
+      const result = await userCollection.insertOne(user);
+      res.send(result)
+    })
+
+
+
 
     // apartment related api
     app.get('/apartment', async (req, res) => {

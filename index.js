@@ -70,6 +70,18 @@ async function run() {
       next();
     }
 
+    // use verify member after verifyToken
+    const verifyMember = async(req, res, next) =>{
+      const email = req.decoded?.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const isMember = user?.role === 'member';
+      if (!isMember) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+
 
 
 
@@ -98,6 +110,27 @@ async function run() {
       
     })
 
+    // securing Member
+    app.get('/users/member/:email',verifyToken, async(req, res) =>{
+      const email = req.params.email;
+
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let member = false;
+      if (user) {
+        member = user?.role === 'member';
+      }
+      res.send({ member });
+      
+    })
+
+
+
+
     app.post('/users', async(req, res) =>{
       const user = req.body;
        // insert email if user doesnt exists: 
@@ -123,6 +156,22 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
+
+    // make members
+
+    app.patch('/users/member/:id',verifyToken, verifyMember, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'member'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
+
 
     app.delete('/users/:id', verifyToken, verifyAdmin, async( req, res) => {
       const id = req.params.id;

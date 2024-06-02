@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -33,14 +34,41 @@ async function run() {
     // Create unique index on email to ensure one agreement per user
     await apartmentCollection.createIndex({ email: 1 }, { unique: true });
 
+    // jwt related api
+    app.post('/jwt', async(req, res) =>{
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h' });
+      res.send({token});
+    })
+
+    // middlewares
+    const verifyToken = (req, res, next) =>{
+      console.log('inside verify token', req.headers.authorization);
+      if(!req.headers.authorization){
+        return res.status(401).send({ message: 'unauthorized access' });
+      }
+      const token = req.headers.authorization.split(' ')[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next();
+      })
+      
+    }
+
+
 
 
     // users related api
-    app.get('/users', async(req, res) => {
+    app.get('/users', verifyToken, async(req, res) => {
+
       const result = await userCollection.find().toArray();
       res.send(result);
     } );
 
+    
 
     app.post('/users', async(req, res) =>{
       const user = req.body;
@@ -56,7 +84,17 @@ async function run() {
     })
 
     // make admin
-    
+    app.patch('/users/admin/:id',async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'admin'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
 
     app.delete('/users/:id', async( req, res) => {
       const id = req.params.id;

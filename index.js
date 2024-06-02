@@ -29,6 +29,7 @@ async function run() {
     const userCollection = client.db("manageDb").collection("users");
     const apartCollection = client.db("manageDb").collection("apartment");
     const apartmentCollection = client.db("manageDb").collection("aparts");
+    const announcmentCollection = client.db("manageDb").collection("announcment");
 
 
     // Create unique index on email to ensure one agreement per user
@@ -211,6 +212,24 @@ async function run() {
       const result = await apartmentCollection.insertOne(cartItem);
       res.send(result);
     });
+
+
+    // Announcement related api
+
+    app.get('/announcment', async (req, res) => {
+      const result = await announcmentCollection.find().toArray();
+      res.send(result);
+  });
+
+
+    app.post('/announcment',verifyToken,verifyAdmin, async (req, res) => {
+      const item = req.body;
+      const result = await announcmentCollection.insertOne(item);
+      res.send(result);
+    });
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

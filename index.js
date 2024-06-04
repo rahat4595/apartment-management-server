@@ -32,6 +32,7 @@ async function run() {
     const userCollection = client.db("manageDb").collection("users");
     const apartCollection = client.db("manageDb").collection("apartment");
     const apartmentCollection = client.db("manageDb").collection("aparts");
+    const paymentCollection = client.db("manageDb").collection("payments");
     const announcmentCollection = client.db("manageDb").collection("announcment");
 
 
@@ -134,6 +135,7 @@ async function run() {
 
 
 
+    // sending user data to server
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -262,6 +264,40 @@ async function run() {
       const result = await announcmentCollection.insertOne(item);
       res.send(result);
     });
+
+
+    // payment intent
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      console.log(amount, 'amount inside the intent')
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+    });
+
+
+    // payment posting api
+    app.post('/payments', async(req, res) =>{
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
+
+      // carefully delete each item from the apart
+      console.log('payment info', payment);
+      const query = {_id: {
+        $in:payment.apartId.map(id => new ObjectId(id))
+      }};
+      const deleteResult = await apartmentCollection.deleteMany(query)
+
+      res.send({paymentResult, deleteResult})
+    })
 
 
 

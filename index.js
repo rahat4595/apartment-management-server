@@ -231,21 +231,56 @@ async function run() {
     });
 
   // Update the status of an agreement
+
   app.put('/aparts/:id', async (req, res) => {
     const id = req.params.id;
-    const { status, acceptDate } = req.body;
+    const { status } = req.body;
 
     const filter = { _id: new ObjectId(id) };
     const updateDoc = {
       $set: {
         status: status,
-        acceptDate: acceptDate,
+        
       },
     };
 
     const result = await apartmentCollection.updateOne(filter, updateDoc);
     res.send(result);
   });
+
+
+
+
+// Add this endpoint in your server code
+app.put('/updateStatusAndRole', async (req, res) => {
+  const { apartId, userEmail } = req.body;
+
+  try {
+      // Update apartment status to 'Checked'
+      const apartQuery = { _id: new ObjectId(apartId) };
+      const apartUpdate = {
+          $set: { 
+              status: 'Checked', 
+              acceptDate: new Date().toISOString().slice(0, 10) 
+          }
+      };
+      const updateApartResult = await apartmentCollection.updateOne(apartQuery, apartUpdate);
+
+      // Update user role to 'member' using email
+      const userQuery = { email: userEmail };
+      const userUpdate = { $set: { role: 'member' } };
+      const updateUserResult = await userCollection.updateOne(userQuery, userUpdate);
+
+      if (updateApartResult.modifiedCount > 0 && updateUserResult.modifiedCount > 0) {
+          res.status(200).send({ message: 'Status and role updated successfully' });
+      } else {
+          res.status(400).send({ message: 'Failed to update status or role' });
+      }
+  } catch (error) {
+      res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
 
 
 

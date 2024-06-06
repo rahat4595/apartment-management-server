@@ -360,19 +360,20 @@ app.put('/updateStatusAndRole', async (req, res) => {
 
 
     // stats or analytics
-    app.get('/admin-stats', async(req, res) =>{
-      const users = await userCollection.estimatedDocumentCount();
-      const apartment = await apartCollection.estimatedDocumentCount();
+    app.get('/admin-stats', async (req, res) => {
+      const users = await userCollection.countDocuments({ role: ' ' }); // Count only users
+      const members = await userCollection.countDocuments({ role: 'member' }); // Count only members
+      const apartments = await apartCollection.estimatedDocumentCount();
       const apart = await apartmentCollection.estimatedDocumentCount();
-
-
+  
       res.send({
-        users,
-        apartment,
-        apart
-      })
-
-    })
+          users,
+          members,
+          apartments,
+          apart
+      });
+  });
+  
 
 
 

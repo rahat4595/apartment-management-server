@@ -363,20 +363,23 @@ app.put('/updateStatusAndRole', async (req, res) => {
     app.get('/admin-stats', async (req, res) => {
       const users = await userCollection.countDocuments({ role: ' ' }); // Count only users
       const members = await userCollection.countDocuments({ role: 'member' }); // Count only members
-      const apartments = await apartCollection.estimatedDocumentCount();
-      const apart = await apartmentCollection.estimatedDocumentCount();
+  
+      // Assuming 'status' field in apartments collection indicates availability
+      const availableRooms = await apartCollection.countDocuments({ status: 'available' });
+      const unavailableRooms = await apartCollection.countDocuments({ status: 'unavailable' });
+  
+      const totalRooms = await apartCollection.estimatedDocumentCount();
   
       res.send({
           users,
           members,
-          apartments,
-          apart
+          totalRooms,
+          availableRooms,
+          unavailableRooms
       });
   });
   
-
-
-
+  
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

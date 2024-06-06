@@ -359,6 +359,22 @@ app.put('/updateStatusAndRole', async (req, res) => {
     })
 
 
+    // stats or analytics
+    app.get('/admin-stats', async(req, res) =>{
+      const users = await userCollection.estimatedDocumentCount();
+      const apartment = await apartCollection.estimatedDocumentCount();
+      const apart = await apartmentCollection.estimatedDocumentCount();
+
+
+      res.send({
+        users,
+        apartment,
+        apart
+      })
+
+    })
+
+
 
 
     // Send a ping to confirm a successful connection

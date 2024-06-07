@@ -34,6 +34,7 @@ async function run() {
     const apartmentCollection = client.db("manageDb").collection("aparts");
     const paymentCollection = client.db("manageDb").collection("payments");
     const announcmentCollection = client.db("manageDb").collection("announcment");
+    const couponCollection = client.db("manageDb").collection("coupons");
 
 
     // Create unique index on email to ensure one agreement per user
@@ -377,6 +378,19 @@ app.put('/updateStatusAndRole', async (req, res) => {
           availableRooms,
           unavailableRooms
       });
+  });
+
+
+  // Coupons related api
+  app.post('/coupons', verifyToken, verifyAdmin, async (req, res) => {
+    const item = req.body;
+    const result = await couponCollection.insertOne(item);
+    res.send(result);
+  });
+
+  app.get('/coupons', async (req, res) => {
+    const result = await couponCollection.find().toArray();
+    res.send(result);
   });
   
   

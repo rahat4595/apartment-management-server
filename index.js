@@ -392,6 +392,22 @@ app.put('/updateStatusAndRole', async (req, res) => {
     const result = await couponCollection.find().toArray();
     res.send(result);
   });
+
+  app.put('/coupons/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    const updatedData = req.body;
+    try {
+        const result = await couponCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updatedData }
+        );
+        res.send(result);
+    } catch (error) {
+        console.error('Error updating coupon:', error);
+        res.status(500).send('Server error');
+    }
+});
+
   
   
 

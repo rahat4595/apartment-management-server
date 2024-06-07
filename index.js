@@ -408,6 +408,17 @@ app.put('/updateStatusAndRole', async (req, res) => {
     }
 });
 
+app.post('/validate-coupon', verifyToken, async (req, res) => {
+  const { code } = req.body;
+  const coupon = await couponCollection.findOne({ code });
+
+  if (coupon) {
+      res.send({ valid: true, discount: coupon.discount });
+  } else {
+      res.send({ valid: false });
+  }
+});
+
   
   
 

@@ -9,7 +9,17 @@ const port = process.env.PORT || 5000;
 
 
 // middleware
-app.use(cors());
+// app.use(
+//   cors({
+//     origin: [ "http://localhost:5173" , "https://building-management-73b1d.web.app" ]
+//   })
+// );
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5174', "https://building-management-73b1d.web.app"],
+  credentials: true,
+  optionSuccessStatus: 200,
+}
+app.use(cors(corsOptions))
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -27,7 +37,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
+    
 
     const userCollection = client.db("manageDb").collection("users");
     const apartCollection = client.db("manageDb").collection("apartment");
@@ -38,7 +48,7 @@ async function run() {
 
 
     // Create unique index on email to ensure one agreement per user
-    await apartmentCollection.createIndex({ email: 1 }, { unique: true });
+    // await apartmentCollection.createIndex({ email: 1 }, { unique: true });
 
     // jwt related api
     app.post('/jwt', async (req, res) => {
@@ -117,7 +127,7 @@ async function run() {
     })
 
     // securing Member
-    app.get('/users/member/:email', verifyToken, async (req, res) => {
+    app.get('/users/member/:email', verifyToken,  async (req, res) => {
       const email = req.params.email;
 
       if (email !== req.decoded.email) {
